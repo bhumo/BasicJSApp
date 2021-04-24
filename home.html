@@ -1,0 +1,577 @@
+<html>
+    <head>
+ 
+        <title>Users Data</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+      </head>
+        <script>
+            var ds=null;
+            var nameDS = {};
+        async  function show(){
+            //let ds = null;
+               const res = await fetch('http://localhost:3000/users')
+                const resJson = await res.json();
+                ds = resJson;
+                console.log(resJson);
+                return resJson;
+            }
+
+
+            function addUser(data){
+               console.log(JSON.stringify(data));
+               fetch('http://localhost:3000/users',{
+                   method: 'POST',
+                   headers: {'Content-Type': 'application/json'},
+                   body: JSON.stringify(data),
+               })
+               .then(response=>response.json())
+               .then(data => console.log(data))
+               .catch((error)=>{
+                   console.log(error);
+               });
+            }
+
+            function editUser(data){
+               
+               console.log(JSON.stringify(data));
+               fetch('http://localhost:3000/users/'+data["id"],{
+                   method: 'PUT',
+                   headers: {'Content-Type': 'application/json'},
+                   body: JSON.stringify(data),
+               })
+               .then(response=>response.json())
+               .then(data => console.log(data))
+               .catch((error)=>{
+                   console.log(error);
+               });
+            }
+
+            function deleteUser(id){
+                fetch('http://localhost:3000/users/'+ id,{
+                    method: 'DELETE',
+                    headers:{'Content-Type':'application/json'},
+    
+                })
+                .then(response => response.json()).then( data=>console.log(data+ "deleted"))
+                .catch((error)=>{
+                    console.log(error);
+                })
+            }
+
+            function createTable(dsa){
+        console.log("*********");
+        console.log(dsa);
+        var tableBody = document.getElementById("userTableBody");
+        var tableHeader = createDiv();
+        tableHeader.classList.add ("tableHeader");
+        var NameHeader = createDiv();
+        NameHeader.innerHTML = "Name";
+        NameHeader.classList.add("tableCell");
+        tableHeader.appendChild(NameHeader);
+        var EmailHeader = createDiv();
+        EmailHeader.classList.add("tableCell");
+        EmailHeader.innerHTML="Email";
+        tableHeader.appendChild(EmailHeader);
+        var RoleHeader = createDiv();
+        tableHeader.appendChild(RoleHeader);
+        RoleHeader.innerHTML="Role";
+        RoleHeader.classList.add("tableCell");
+        var StatusHeader = createDiv();
+        tableHeader.appendChild(StatusHeader);
+        StatusHeader.classList.add("tableCell");
+        StatusHeader.innerHTML="Status";
+        var EditHeader = createDiv();
+        tableHeader.appendChild(EditHeader);
+        EditHeader.classList.add("tableCell");
+        EditHeader.innerHTML = "Edit";
+        var DeleteHeader = createDiv();
+        DeleteHeader.classList.add("tableCell");
+        DeleteHeader.innerHTML="Delete";
+        tableHeader.appendChild(DeleteHeader);
+        tableBody.appendChild(tableHeader);
+       populateData(tableBody,dsa);
+
+        console.log(tableBody);
+        
+    }
+            function populateData(tableBody,ds){
+        //console.log(ds);
+     for(var  i = 0; i<ds.length;i++)
+     {   data = ds[i];
+
+         var tableRow = createDiv();
+         nameDS[data["name"]]=tableRow;
+        tableRow.classList.add("tableRow");
+        var nameCell = createDiv();
+        nameCell.classList.add("tableCell");
+        nameCell.innerHTML = data["name"];
+        tableRow.appendChild(nameCell);
+        var emailCell = createDiv();
+//        console.log(data);
+        emailCell.innerHTML = data["email"];
+        emailCell.classList.add("tableCell");
+        tableRow.appendChild(emailCell);
+        var roleCell = createDiv();
+        roleCell.classList.add("tableCell");
+        roleCell.innerHTML = data["role"];
+        tableRow.appendChild(roleCell);
+        var statusCell = createDiv();
+        statusCell.classList.add("tableCell");
+        if(data["is_active"]){
+            statusCell.innerHTML = "active";
+        }
+        else{
+            statusCell.innerHTML="inactive";
+        }
+
+        tableRow.appendChild(statusCell);
+        var edit = createDiv();
+        edit.classList.add("tableCell");
+        var button = document.createElement('button');
+        button.class = "btn btn-light";
+        button.innerText = "Edit";
+        button.onclick =  editUserHandler(i);
+        
+        edit.appendChild(button);
+
+        
+        tableRow.appendChild(edit);
+        var deleteCell = createDiv();
+        deleteCell.classList.add("tableCell");
+        var button2 = document.createElement('button');
+        button2.class = "btn btn-danger";
+        button2.innerText = "Delete";
+        button2.onclick = deleteUserHandler(i);
+        deleteCell.appendChild(button2);
+        tableRow.appendChild(deleteCell);
+        tableBody.appendChild(tableRow);
+    }
+    }
+            function createDiv(){
+        return document.createElement('div');
+    }
+    
+            function searchUser(user){
+                user = user.toLowerCase();
+                let tableBody = document.getElementById("userTableBody");
+                //console.log(tableBody.childElementCount);
+                var rowNodes = tableBody.childNodes;
+                //console.log(rowNodes);
+                for(var i=1;i<tableBody.childElementCount;i++){
+                    var rowElement = rowNodes[i];
+                    var name = rowElement.childNodes[0].innerHTML.toLowerCase();
+                    //console.log(name.indexOf(user)+ " " + name);
+                    if(name.includes(user)){
+                        console.log(name+ " "+user);
+                        rowElement.style.display = "";
+                    }else{
+                        rowElement.style.display="none";
+                    }
+
+                }
+            }
+
+            function statusFilter(filter){
+                var tableBody = document.getElementById("userTableBody");
+                    var rowNodes = tableBody.childNodes;
+                if(filter=="any"){
+                    
+                    for(let i=1;i<tableBody.childElementCount;i++){
+                        var rowElement = rowNodes[i];
+                        rowElement.style.display="";
+                    }
+                }else{
+                    for(let i =1;i<tableBody.childElementCount;i++){
+                        var rowElement = rowNodes[i];
+                        var role = rowElement.childNodes[3].innerHTML.toLowerCase();
+                        if(role==filter){
+                            rowElement.style.display="";
+                        }else{
+                            rowElement.style.display="none";
+                        }
+                    }
+                }
+            }
+
+
+            function roleFilter(filter){
+                //alert(filter);
+                var tableBody = document.getElementById("userTableBody");
+                    var rowNodes = tableBody.childNodes;
+                    console.log(filter=="any")
+                if(filter=="any"){
+                    
+                    for(let i=1;i<tableBody.childElementCount;i++){
+                        var rowElement = rowNodes[i];
+                        rowElement.style.display="";
+                    }
+                }else{
+                
+                
+                    for(var i =1;i<tableBody.childElementCount;i++){
+                        var rowElement = rowNodes[i];
+                        console.log(rowElement);
+                        var role = rowElement.childNodes[2].innerHTML.toLowerCase();
+                        //console.log(role);
+                        if(role.indexOf(filter)>-1){
+                            rowElement.style.display="";
+                        }else{
+                            
+                            rowElement.style.display="none";
+                        }
+                    }
+                }  
+            }
+
+
+            function addUserForm(form){
+                
+                var object = {};
+                object["id"] = form["id"].value;
+                object["name"] = form["name"].value;
+                object["email"] = form["email"].value;
+                object["role"] = form["role"].value;
+                
+                if(form["is_active"].value=='on'){
+                    object["is_active"] = true;    
+                }else{
+                    object["is_active"]=false;
+                }
+                object["phone"]=form["phone"].value;
+                var currentdate = new Date(); 
+                var datetime = "Last Sync: " + currentdate.getDate() + "/"
+                + (currentdate.getMonth()+1)  + "/" 
+                + currentdate.getFullYear() + " @ "  
+                + currentdate.getHours() + ":"  
+                + currentdate.getMinutes() + ":" 
+                + currentdate.getSeconds();
+                object["updated_at"]=datetime;
+                console.log(JSON.stringify(object));
+                addUser(object);
+                location.reload();
+                
+                
+            }
+
+            function editUserSubmit(form){
+                //alert("HERE");
+                //alert(form["name"].value);
+                console.log(form["name"]);
+                var object = {};
+                object["id"] = form["id"].value;
+                object["name"] = form["name"].value;
+                object["email"] = form["email"].value;
+                object["role"] = form["role"].value;
+                
+                if(form["is_active"].value=='on'){
+                    object["is_active"] = true;    
+                }else{
+                    object["is_active"]=false;
+                }
+                object["phone"]=form["phone"].value;
+                var currentdate = new Date(); 
+                var datetime = "Last Sync: " + currentdate.getDate() + "/"
+                + (currentdate.getMonth()+1)  + "/" 
+                + currentdate.getFullYear() + " @ "  
+                + currentdate.getHours() + ":"  
+                + currentdate.getMinutes() + ":" 
+                + currentdate.getSeconds();
+                object["updated_at"]=datetime;
+                console.log(JSON.stringify(object));
+                editUser(object);
+                location.reload();
+            }
+            function deleteUserHandler(index){
+                return function(){
+                    deleteUserModal(index);
+                }
+            }
+            function deleteUserModal(index){
+             //   alert(index);
+             var modal = document.getElementById("myDeleteModal");
+             var deleteUserName = document.getElementById("deleteUserName");
+             var deleteUserId = document.getElementById("deleteUserId");
+             let data = ds[index];
+             deleteUserName.innerHTML = data["name"];
+             deleteUserId.innerHTML = data["id"];
+             modal.style.display="block"; 
+            }
+
+        
+            function deleteUserSubmit(){
+    
+                deleteUser(document.getElementById("deleteUserId").innerHTML);
+                location.reload();
+            }
+            function editUserHandler(index){
+               return function(){
+                   editUserForm(index);
+               }
+            }
+            function closeModal(value){
+                if(value=="edit"){
+                    document.getElementById("myEditModal").style.display="none";
+                }else if(value=="delete"){
+                    document.getElementById("myDeleteModal").style.display="none";
+                }
+            }
+            function editUserForm(index){
+                //alert(index);
+                var modal = document.getElementById("myEditModal");
+                var form = document.getElementById("editUserForm");
+                data = ds[index];
+                form["id"].value=data["id"];
+                form["name"].value = data["name"];
+                form["email"].value = data["email"];
+                form["role"].value = data["role"].toUpperCase();
+                form["phone"].value = data["phone"];
+                form["is_active"].checked = data["is_active"];
+                            
+                modal.style.display="block";
+            }
+            window.addEventListener('load',function(){
+                    show().then(ds=>createTable(ds));
+            });            
+        </script>
+    </head>
+    <style>
+
+        .btn-light{
+            background-color: lightgrey;
+            
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+        .divtable{
+            display:table;
+            width:100%;
+            padding:10px 20px;
+            overflow: visible;
+        }
+        .tableRow{
+            display:table-row;
+        
+        
+        }
+        .tableRow:hover{
+            background-color:lightsteelblue;
+            
+        }
+        .tableCell{
+            display:table-cell;
+            border: transparent;
+            box-shadow: 0.6px;
+            word-wrap: break-word;
+            width: 1fr;
+            padding: 2px;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+        .tableHeader{
+            display: table-row;
+            background-color: black;
+            font-size: medium;
+            color: whitesmoke;
+            text-align: center;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            box-shadow: 2px 2px 2px 2px;
+        }
+        .tableBody{
+            display:table-row-group;
+            width: 100%;
+        }
+        .row{
+            display: flex;
+            padding: 10px;
+            width:100%;
+
+        }
+        .column{
+            
+            padding-left: 10px;
+        }
+    </style>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="column">
+                <form class="form-inline my-2 my-lg-0">
+                    <input class="form-control " type="search" placeholder="Search" aria-label="Search" oninput="searchUser(this.value)">
+                    
+                  </form>
+                </div>
+                <div class="column">
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" data-toggle="dropdown">
+                            Role
+                        <span class="caret"></span></button>
+                        <ul class="dropdown-menu">
+                          <li><a onclick="roleFilter('any')">Any</a></li>
+                          <li><a onclick="roleFilter('member')">Member</a></li>
+                          <li><a onclick="roleFilter('admin')">Admin</a></li>
+                          <li><a onclick="roleFilter('gurest')">Guest</a></li>
+                        </ul>
+                      </div>
+                </div>
+                <div class="column">
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" data-toggle="dropdown">
+                            Status
+                        <span class="caret"></span></button>
+                        <ul class="dropdown-menu">
+                          <li><a onclick="statusFilter('any')">Any</a></li>
+                          <li><a onclick="statusFilter('inactive')">In Active</a></li>
+                          <li><a onclick="statusFilter('active')">Active</a></li>
+ 
+                        </ul>
+                      </div>
+                </div>
+                <div class="column">
+                    <button type="button" class="btn btn-light" data-toggle="modal" data-target="#myModal">+ New User</button>
+
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Add User</h4>
+      </div>
+      <div class="modal-body">
+       <form id="addUserForm">
+           <div class="form-group">
+               <label for="id">ID</label>
+               <input type="text" class="form-control" id="id" aria-describedby="idHelp" placeholder="Enter ID">
+           </div>
+        <div class="form-group">
+            <label for="na<!-- Modal -->me">Name</label>
+            <input type="text" class="form-control" id="name" aria-describedby="nameHelp" placeholder="Enter name">
+          </div>
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email">
+                <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+          </div>
+          <div class="form-group">
+            <label for="role"> Role</label>
+            <select class="form-control" id="role">
+                <option value="ADMIN">Admin</option>
+                <option value="GUEST">Guest</option>
+                <option value="MEMBER">Member</option>
+            </select>
+          </div>
+          <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="is_active">
+            <label for="is_active">Active</label>
+        </div>
+        <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="text" class="form-control" id="phone" plcaholder="+91-1234567890">
+        </div>
+       </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal" onclick="addUserForm(document.getElementById('addUserForm'))">Submit</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+                </div>
+
+
+
+            </div>
+            
+            <div id="myEditModal" class="modal fade in" role="dialog" >
+                <div class="modal-dialog">
+              
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" onclick="closeModal('edit')">&times;</button>
+                      <h4 class="modal-title">Edit User</h4>
+                    </div>
+                    <div class="modal-body">
+                     <form id="editUserForm">
+                         <div class="form-group">
+                             <label for="id">ID</label>
+                             <input type="text" class="form-control" id="id" aria-describedby="idHelp" placeholder="Enter ID" >
+                         </div>
+                      <div class="form-group">
+                          <label for="na<!-- Modal -->me">Name</label>
+                          <input type="text" class="form-control" id="name" aria-describedby="nameHelp" placeholder="Enter name">
+                        </div>
+                          <div class="form-group">
+                              <label for="email">Email address</label>
+                              <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email">
+                              <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                        </div>
+                        <div class="form-group">
+                          <label for="role"> Role</label>
+                          <select class="form-control" id="role">
+                              <option value="ADMIN">Admin</option>
+                              <option value="GUEST">Guest</option>
+                              <option value="MEMBER">Member</option>
+                          </select>
+                        </div>
+                        <div class="form-group form-check">
+                          <input type="checkbox" class="form-check-input" id="is_active">
+                          <label for="is_active">Active</label>
+                      </div>
+                      <div class="form-group">
+                          <label for="phone">Phone Number</label>
+                          <input type="text" class="form-control" id="phone" plcaholder="+91-1234567890">
+                      </div>
+                     </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal" onclick="closeModal('edit')">Close</button>
+                      <button type="button" class="btn btn-default" data-dismiss="modal" onclick="editUserSubmit(document.getElementById('editUserForm'))">Submit</button>
+                    </div>
+                  </div>
+              
+                </div>
+              </div>     
+                 
+            <div id="myDeleteModal" class="modal fade in" role="dialog" >
+                <div class="modal-dialog">
+              
+                  <!-- Modal content-->
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" onclick="closeModal('delete')">&times;</button>
+                      <h4 class="modal-title">Delete User</h4>
+                    </div>
+                    <div class="modal-body">
+                     <h6> Are you sure you want to delete <span id="deleteUserName"></span> with <span id="deleteUserId"></span></h4>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal" onclick="closeModal('delete')">Close</button>
+                      <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="deleteUserSubmit()">Submit</button>
+                    </div>
+                  </div>
+              
+                </div>
+              </div>       
+            
+            <div class="divtable">
+               <div class="tableBody" id="userTableBody">
+                   
+                       
+               </div>
+            </div>
+        </div>
+       
+        
+
+
+
+        
+    </body>
+</html>
